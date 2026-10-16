@@ -1,0 +1,1062 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VoiceHire — AI Resume &amp; Internship Fit Assistant</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --primary-subtle: #eff6ff;
+      --success: #10b981;
+      --success-subtle: #ecfdf5;
+      --warning: #f59e0b;
+      --warning-subtle: #fffbeb;
+      --danger: #ef4444;
+      --danger-subtle: #fef2f2;
+      --radius: 12px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: var(--font-family);
+      font-size: 15px;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--card-border);
+      padding: 16px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: var(--shadow-sm);
+    }
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-icon {
+      font-size: 26px;
+      background: var(--primary-subtle);
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+    }
+    .logo-text h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+    }
+    .logo-text p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .mode-control {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg);
+      padding: 6px 12px;
+      border-radius: 30px;
+      border: 1px solid var(--card-border);
+    }
+    .status-badge {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .badge-live { background: #dcfce7; color: #15803d; }
+    .badge-demo { background: #fef3c7; color: #b45309; }
+    .toggle-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 20px 60px;
+    }
+
+    .grid-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 768px) {
+      .grid-inputs { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-title span.badge {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background: var(--primary-subtle);
+      color: var(--primary);
+    }
+
+    /* Upload Zone */
+    .dropzone {
+      border: 2px dashed #cbd5e1;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+      background: var(--bg);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 12px;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--primary);
+      background: var(--primary-subtle);
+    }
+    .dropzone p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .file-input { display: none; }
+    .file-status {
+      font-size: 12px;
+      color: var(--success);
+      font-weight: 600;
+      margin-top: 6px;
+      display: none;
+    }
+
+    textarea, input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 12px;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text-main);
+      background: #fafafa;
+      resize: vertical;
+      transition: border-color 0.2s;
+    }
+    textarea:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+    textarea { min-height: 190px; }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      color: var(--text-main);
+      transition: all 0.15s ease;
+    }
+    button:hover { background: #f1f5f9; }
+    button.btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      font-weight: 600;
+    }
+    button.btn-primary:hover {
+      background: var(--primary-hover);
+    }
+    button.btn-sm {
+      padding: 5px 10px;
+      font-size: 12px;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Primary Action */
+    .action-container {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .btn-large {
+      padding: 14px 28px;
+      font-size: 16px;
+      border-radius: 10px;
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Results */
+    #results-area { display: none; }
+    .fit-header-card {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      color: #ffffff;
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-md);
+    }
+    .fit-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .fit-target-role {
+      font-size: 20px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+    .fit-target-comp {
+      color: #94a3b8;
+      font-size: 15px;
+      font-weight: 400;
+    }
+    .fit-pill {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .fit-strong { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #059669; }
+    .fit-moderate { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #d97706; }
+    .fit-developing { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #dc2626; }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 10px;
+      background: #334155;
+      border-radius: 5px;
+      overflow: hidden;
+      margin: 12px 0;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: #10b981;
+      border-radius: 5px;
+      transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .fit-rationale {
+      font-size: 14px;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+    .fit-source {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 8px;
+      font-style: italic;
+    }
+
+    .grid-results {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 768px) {
+      .grid-results { grid-template-columns: 1fr; }
+    }
+
+    .result-section h3 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tag-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .tag {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+    .tag-matched {
+      background: var(--success-subtle);
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+    .tag-missing {
+      background: var(--danger-subtle);
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .evidence-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-left: 3px solid var(--success);
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .evidence-item b {
+      color: #0f172a;
+      display: block;
+      margin-bottom: 2px;
+      font-size: 12px;
+      text-transform: capitalize;
+    }
+    .evidence-quote {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .project-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-left: 3px solid var(--primary);
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+    }
+    .project-card h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 3px;
+    }
+    .project-card p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .prep-list {
+      list-style-type: none;
+    }
+    .prep-list li {
+      padding: 8px 12px;
+      background: #fffbeb;
+      border: 1px solid #fef3c7;
+      border-left: 3px solid var(--warning);
+      border-radius: 6px;
+      font-size: 13px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    /* Email Drafting */
+    .email-container {
+      margin-top: 24px;
+      border-top: 2px solid var(--card-border);
+      padding-top: 24px;
+    }
+    .email-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .email-controls select {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      font-family: inherit;
+      font-size: 13px;
+      background: #fff;
+    }
+    .email-controls input {
+      flex: 1;
+      min-width: 240px;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      border: 2px dashed #e2e8f0;
+      border-radius: var(--radius);
+      background: #ffffff;
+      color: var(--text-muted);
+    }
+    .empty-state-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+    .empty-state h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
+      display: none;
+      z-index: 100;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-content">
+      <div class="logo-group">
+        <div class="logo-icon">🎙️</div>
+        <div class="logo-text">
+          <h1>VoiceHire</h1>
+          <p>AI Resume &amp; Internship Fit Assistant</p>
+        </div>
+      </div>
+      <div class="mode-control">
+        <span id="status-badge" class="status-badge badge-demo">⚡ Checking system...</span>
+        <label class="toggle-label" title="Force demo mode to bypass live AI calls">
+          <input type="checkbox" id="demo-toggle" checked> Demo Mode (Deterministic)
+        </label>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Inputs Grid -->
+    <div class="grid-inputs">
+      <!-- Candidate Resume -->
+      <div class="card">
+        <div class="card-title">
+          <span>1. Candidate Resume</span>
+          <span class="badge" id="resume-count">0 characters</span>
+        </div>
+        
+        <div class="dropzone" id="dropzone">
+          <strong>📄 Drag &amp; drop resume PDF here</strong> or click to browse
+          <p>Scans text instantly using secure local extraction</p>
+          <input type="file" id="pdf-file" class="file-input" accept=".pdf">
+          <div class="file-status" id="file-status"></div>
+        </div>
+
+        <textarea id="resume-text" placeholder="Or paste candidate resume text here directly (education, skills, projects, experience)..."></textarea>
+        
+        <div class="btn-row">
+          <button id="load-sample-resume" class="btn-sm">⚡ Load Sample: Asha Verma (IIT-H CSE)</button>
+          <button id="clear-resume" class="btn-sm">Clear</button>
+        </div>
+      </div>
+
+      <!-- Job Description -->
+      <div class="card">
+        <div class="card-title">
+          <span>2. Internship / Job Description</span>
+          <span class="badge" id="jd-count">0 characters</span>
+        </div>
+        
+        <textarea id="jd-text" style="min-height: 280px;" placeholder="Paste the internship or job description here (role title, required skills, responsibilities)..."></textarea>
+        
+        <div class="btn-row">
+          <button id="load-sample-jd1" class="btn-sm">⚡ Sample: Acme Robotics (SDE Intern)</button>
+          <button id="load-sample-jd2" class="btn-sm">⚡ Sample: FinTech (Data/ML Intern)</button>
+          <button id="clear-jd" class="btn-sm">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analyze CTA -->
+    <div class="action-container">
+      <button id="btn-analyze" class="btn-primary btn-large">
+        <span id="btn-analyze-text">🔍 Analyze Fit &amp; Generate Application Pitch</span>
+      </button>
+    </div>
+
+    <!-- Empty State Guide -->
+    <div class="empty-state" id="empty-state">
+      <div class="empty-state-icon">🎯</div>
+      <h3>Ready to Evaluate Internship Match</h3>
+      <p>Load the sample resume and job description above, or paste your own, then click <b>Analyze Fit</b>.</p>
+    </div>
+
+    <!-- Results Area -->
+    <div id="results-area">
+      <!-- Fit Summary Banner -->
+      <div class="fit-header-card">
+        <div class="fit-header-top">
+          <div>
+            <div class="fit-target-role" id="res-role">Role Title</div>
+            <div class="fit-target-comp" id="res-company">Company</div>
+          </div>
+          <div class="fit-pill" id="res-fit-pill">Strong Fit</div>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="res-bar" style="width: 70%;"></div>
+        </div>
+        <p class="fit-rationale" id="res-rationale"></p>
+        <div class="fit-source" id="res-source"></div>
+      </div>
+
+      <!-- 4 Structured Analysis Cards -->
+      <div class="grid-results">
+        <!-- 1. Matched Skills -->
+        <div class="card result-section">
+          <h3 style="color: #059669;">🎯 Matched Skills &amp; Evidence</h3>
+          <div class="tag-container" id="matched-tags"></div>
+          <div id="matched-evidence-list"></div>
+        </div>
+
+        <!-- 2. Missing Skills -->
+        <div class="card result-section">
+          <h3 style="color: #dc2626;">⚠️ Missing / Weakly Evidenced Requirements</h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+            Skills required by JD with no verified evidence in resume:
+          </p>
+          <div class="tag-container" id="missing-tags"></div>
+          <p style="font-size: 12px; color: #64748b; background: #f8fafc; padding: 8px 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
+            ℹ️ VoiceHire strictly prevents hallucinations: these skills will <b>not</b> be falsely claimed in your application email.
+          </p>
+        </div>
+
+        <!-- 3. Relevant Projects -->
+        <div class="card result-section">
+          <h3 style="color: #2563eb;">💼 Relevant Candidate Projects</h3>
+          <div id="projects-list"></div>
+        </div>
+
+        <!-- 4. Preparation Suggestions -->
+        <div class="card result-section">
+          <h3 style="color: #d97706;">💡 Practical Interview Preparation</h3>
+          <ul class="prep-list" id="prep-list"></ul>
+        </div>
+      </div>
+
+      <!-- 5. Application Email -->
+      <div class="card email-container">
+        <div class="card-title">
+          <span>✉️ Personalized Application Email</span>
+          <span class="badge" style="background:#e0f2fe; color:#0284c7;">Grounded in Verified Facts</span>
+        </div>
+        
+        <div class="email-controls">
+          <label style="font-size: 13px; font-weight: 500;">Tone:</label>
+          <select id="email-tone">
+            <option value="professional">Professional &amp; Confident</option>
+            <option value="concise">Concise &amp; Direct (High Impact)</option>
+            <option value="warm">Enthusiastic &amp; Collaborative</option>
+          </select>
+          <input type="text" id="email-extra" placeholder="Optional candidate note (e.g. Available immediately for 6 months)">
+          <button id="btn-draft" class="btn-primary">
+            <span id="btn-draft-text">🔄 Regenerate Email</span>
+          </button>
+        </div>
+
+        <textarea id="email-text" style="min-height: 240px; font-family: monospace; font-size: 13.5px;"></textarea>
+        
+        <div class="btn-row" style="margin-top: 14px;">
+          <button id="btn-copy" class="btn-primary">📋 Copy Email to Clipboard</button>
+          <button id="btn-download">💾 Download .txt</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast">Notification</div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    let CURRENT_ANALYSIS = null;
+
+    // Toast notification
+    function toast(text, isError = false) {
+      const el = $('toast');
+      el.textContent = text;
+      el.style.background = isError ? '#b91c1c' : '#0f172a';
+      el.style.display = 'block';
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => { el.style.display = 'none'; }, 3200);
+    }
+
+    // Check System Status
+    async function checkStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        const badge = $('status-badge');
+        const toggle = $('demo-toggle');
+        
+        if (data.live) {
+          badge.textContent = '🟢 Live AI: ' + data.model;
+          badge.className = 'status-badge badge-live';
+          toggle.checked = false;
+        } else {
+          badge.textContent = '⚡ Demo Mode (Deterministic Heuristic)';
+          badge.className = 'status-badge badge-demo';
+          toggle.checked = true;
+        }
+      } catch (e) {
+        $('status-badge').textContent = '⚡ Demo Mode (Offline)';
+        $('demo-toggle').checked = true;
+      }
+    }
+    checkStatus();
+
+    $('demo-toggle').onchange = () => {
+      const checked = $('demo-toggle').checked;
+      $('status-badge').textContent = checked ? '⚡ Demo Mode (Deterministic Heuristic)' : '🟢 Live AI Mode';
+      $('status-badge').className = checked ? 'status-badge badge-demo' : 'status-badge badge-live';
+      toast(checked ? 'Switched to Grounded Demo Mode' : 'Switched to Live AI Mode');
+    };
+
+    // Character counters
+    function updateCounters() {
+      $('resume-count').textContent = `${$('resume-text').value.length} chars`;
+      $('jd-count').textContent = `${$('jd-text').value.length} chars`;
+    }
+    $('resume-text').oninput = updateCounters;
+    $('jd-text').oninput = updateCounters;
+
+    // Samples
+    const SAMPLE_RESUME = `Asha Verma
+Hyderabad, India • asha.verma@example.edu • github.com/ashav • linkedin.com/in/ashaverma
+
+EDUCATION
+Indian Institute of Technology (IIT) Hyderabad — B.Tech in Computer Science and Engineering
+CGPA: 8.9/10 (Expected Graduation: May 2027)
+
+TECHNICAL SKILLS
+Languages: Python, C++, SQL, HTML, CSS, JavaScript
+Frameworks & Tools: Flask, Git, Docker, REST APIs, Linux, PyTest, SQLite, PostgreSQL
+Core CS: Data Structures, Algorithms, Object-Oriented Programming, Database Systems
+
+PROJECTS
+• Campus Events REST API: Developed a production-ready Flask REST backend with SQLite/PostgreSQL handling 15+ endpoints for student event registration. Implemented authentication tokens, automated database migrations, and wrote 25+ unit tests using PyTest.
+• High-Performance Sorting Visualizer: Built an interactive desktop visualizer in C++ implementing QuickSort, MergeSort, and HeapSort with real-time state analysis, comparing algorithmic time complexity on datasets up to 100k items.
+• Git Workflow Automation Bot: Created Python automation scripts integrating with GitHub webhook APIs to lint student repositories and report test coverage metrics.
+
+EXPERIENCE
+• Open Source Contributor — Python Developer Community: Submitted bug fixes and documentation improvements for popular Python web libraries. Participated in structured peer code reviews and CI/CD pipelines.`;
+
+    const SAMPLE_JD_1 = `Role: Software Development Engineer Intern
+Company: Acme Robotics
+Location: Remote / Hyderabad
+
+About Acme Robotics:
+Acme Robotics builds autonomous robotic fulfillment systems for logistics warehouses across the world.
+
+Key Responsibilities:
+• Build, test, and maintain high-performance REST APIs using Python and Flask.
+• Design clean relational database schemas and write optimized SQL queries.
+• Collaborate using Git workflows, write thorough unit tests, and participate in code reviews.
+• Containerize backend services using Docker for cloud deployment on AWS.
+
+Requirements:
+• Currently pursuing a Degree in Computer Science or related engineering field.
+• Strong foundation in Python, data structures, and algorithms.
+• Hands-on experience developing REST APIs (Flask or FastAPI).
+• Familiarity with Git version control and SQL databases.
+• Bonus: Experience with Docker containers and AWS fundamentals.`;
+
+    const SAMPLE_JD_2 = `Role: Machine Learning & Data Engineering Intern
+Company: NextGen Financial AI
+Location: Bangalore / Hybrid
+
+About NextGen Financial AI:
+We develop cutting-edge predictive AI and quantitative analytics for algorithmic finance.
+
+Key Responsibilities:
+• Clean and preprocess large-scale financial time-series data using Python, Pandas, and NumPy.
+• Implement statistical machine learning models and deep learning pipelines with PyTorch or TensorFlow.
+• Build automated data extraction pipelines using SQL and Docker.
+• Formulate evaluations with rigorous testing and statistical metrics.
+
+Requirements:
+• Strong programming skills in Python and foundational Data Structures.
+• Proficiency with Machine Learning concepts, Pandas, NumPy, and SQL.
+• Bonus: Familiarity with Git, Linux environments, and PyTorch.`;
+
+    $('load-sample-resume').onclick = () => {
+      $('resume-text').value = SAMPLE_RESUME;
+      updateCounters();
+      toast('Sample resume loaded (Asha Verma)');
+    };
+
+    $('load-sample-jd1').onclick = () => {
+      $('jd-text').value = SAMPLE_JD_1;
+      updateCounters();
+      toast('Sample SDE Internship JD loaded');
+    };
+
+    $('load-sample-jd2').onclick = () => {
+      $('jd-text').value = SAMPLE_JD_2;
+      updateCounters();
+      toast('Sample ML & Data Internship JD loaded');
+    };
+
+    $('clear-resume').onclick = () => {
+      $('resume-text').value = '';
+      $('file-status').style.display = 'none';
+      updateCounters();
+    };
+
+    $('clear-jd').onclick = () => {
+      $('jd-text').value = '';
+      updateCounters();
+    };
+
+    // PDF Upload handling
+    const dropzone = $('dropzone');
+    const pdfFileInput = $('pdf-file');
+    
+    dropzone.onclick = () => pdfFileInput.click();
+    dropzone.ondragover = e => { e.preventDefault(); dropzone.classList.add('dragover'); };
+    dropzone.ondragleave = () => dropzone.classList.remove('dragover');
+    dropzone.ondrop = e => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) handlePdfUpload(e.dataTransfer.files[0]);
+    };
+    pdfFileInput.onchange = e => {
+      if (e.target.files.length) handlePdfUpload(e.target.files[0]);
+    };
+
+    async function handlePdfUpload(file) {
+      if (!file.name.toLowerCase().endsWith('.pdf')) {
+        return toast('Please select a valid PDF file.', true);
+      }
+      $('file-status').style.display = 'block';
+      $('file-status').textContent = `⏳ Parsing "${file.name}"...`;
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      try {
+        const res = await fetch('/api/resume', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to parse PDF');
+        
+        $('resume-text').value = data.text;
+        $('file-status').textContent = `✓ Extracted ${data.text.length} characters (${data.pages} page${data.pages > 1 ? 's' : ''}) from ${file.name}`;
+        updateCounters();
+        toast('PDF resume extracted successfully!');
+      } catch (err) {
+        $('file-status').textContent = `❌ ${err.message}`;
+        toast(err.message, true);
+      }
+    }
+
+    // Helper: Escaping HTML
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    // Analysis Logic
+    $('btn-analyze').onclick = async () => {
+      const resume = $('resume-text').value.trim();
+      const jd = $('jd-text').value.trim();
+      
+      if (resume.length < 40) {
+        $('resume-text').focus();
+        return toast('Please paste or upload a resume (min 40 characters).', true);
+      }
+      if (jd.length < 20) {
+        $('jd-text').focus();
+        return toast('Please provide a job/internship description (min 20 characters).', true);
+      }
+
+      const btn = $('btn-analyze');
+      const textSpan = $('btn-analyze-text');
+      btn.disabled = true;
+      textSpan.innerHTML = '<span class="spinner"></span> Analyzing Candidate Fit &amp; Drafting Pitch...';
+
+      try {
+        const isDemo = $('demo-toggle').checked;
+        const res = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ resume, jd, demo: isDemo })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Analysis failed');
+
+        CURRENT_ANALYSIS = data;
+        renderAnalysis(data);
+
+        // Also automatically generate the initial application email
+        await draftEmail(false);
+
+        $('empty-state').style.display = 'none';
+        $('results-area').style.display = 'block';
+        $('results-area').scrollIntoView({ behavior: 'smooth' });
+        toast('Analysis complete!');
+      } catch (err) {
+        toast(err.message, true);
+      } finally {
+        btn.disabled = false;
+        textSpan.innerHTML = '🔍 Analyze Fit &amp; Generate Application Pitch';
+      }
+    };
+
+    function renderAnalysis(data) {
+      // Role & Company
+      $('res-role').textContent = data.role || 'Software Engineering Intern';
+      $('res-company').textContent = data.company ? `@ ${data.company}` : '';
+
+      // Assessment Pill & Bar
+      const score = data.assessment.score_percent || 0;
+      const level = data.assessment.level || 'Moderate';
+      const pill = $('res-fit-pill');
+      pill.textContent = `${level} Fit • ${score}% Match`;
+      pill.className = 'fit-pill ' + (level === 'Strong' ? 'fit-strong' : (level === 'Moderate' ? 'fit-moderate' : 'fit-developing'));
+
+      $('res-bar').style.width = `${Math.max(score, 8)}%`;
+      $('res-bar').style.background = level === 'Strong' ? '#10b981' : (level === 'Moderate' ? '#f59e0b' : '#ef4444');
+
+      $('res-rationale').textContent = data.assessment.rationale;
+      $('res-source').textContent = `Verification Source: ${data.source}`;
+
+      // 1. Matched Skills
+      const matchedContainer = $('matched-tags');
+      const evidenceList = $('matched-evidence-list');
+      matchedContainer.innerHTML = '';
+      evidenceList.innerHTML = '';
+
+      if (data.matched && data.matched.length > 0) {
+        data.matched.forEach(m => {
+          matchedContainer.innerHTML += `<span class="tag tag-matched">✓ ${esc(m.skill)}</span>`;
+          if (m.evidence) {
+            evidenceList.innerHTML += `
+              <div class="evidence-item">
+                <b>${esc(m.skill)}</b>
+                <div class="evidence-quote">"${esc(m.evidence)}"</div>
+              </div>`;
+          }
+        });
+      } else {
+        matchedContainer.innerHTML = '<span class="tag" style="background:#f1f5f9; color:#64748b;">No direct skill matches detected</span>';
+      }
+
+      // 2. Missing Skills
+      const missingContainer = $('missing-tags');
+      missingContainer.innerHTML = '';
+      if (data.missing && data.missing.length > 0) {
+        data.missing.forEach(s => {
+          missingContainer.innerHTML += `<span class="tag tag-missing">✕ ${esc(s)}</span>`;
+        });
+      } else {
+        missingContainer.innerHTML = '<span class="tag tag-matched">✓ All detected requirements covered!</span>';
+      }
+
+      // 3. Relevant Projects
+      const projectsList = $('projects-list');
+      projectsList.innerHTML = '';
+      if (data.projects && data.projects.length > 0) {
+        data.projects.forEach(p => {
+          projectsList.innerHTML += `
+            <div class="project-card">
+              <h4>${esc(p.title)}</h4>
+              <p>${esc(p.description)}</p>
+            </div>`;
+        });
+      } else {
+        projectsList.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">No explicit project sections extracted.</p>';
+      }
+
+      // 4. Preparation Topics
+      const prepList = $('prep-list');
+      prepList.innerHTML = '';
+      if (data.prep_topics && data.prep_topics.length > 0) {
+        data.prep_topics.forEach(t => {
+          prepList.innerHTML += `<li><span>💡</span><span>${esc(t)}</span></li>`;
+        });
+      }
+    }
+
+    // Email Generation Logic
+    async function draftEmail(showToast = true) {
+      if (!CURRENT_ANALYSIS) {
+        return toast('Please run analysis first.', true);
+      }
+      const btn = $('btn-draft');
+      const btnText = $('btn-draft-text');
+      btn.disabled = true;
+      btnText.innerHTML = '<span class="spinner"></span> Drafting...';
+
+      try {
+        const isDemo = $('demo-toggle').checked;
+        const res = await fetch('/api/email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            resume: $('resume-text').value,
+            jd: $('jd-text').value,
+            analysis: CURRENT_ANALYSIS,
+            tone: $('email-tone').value,
+            extra: $('email-extra').value,
+            demo: isDemo
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to draft email');
+
+        $('email-text').value = data.email;
+        if (showToast) toast('Application email updated!');
+      } catch (err) {
+        toast(err.message, true);
+      } finally {
+        btn.disabled = false;
+        btnText.innerHTML = '🔄 Regenerate Email';
+      }
+    }
+
+    $('btn-draft').onclick = () => draftEmail(true);
+    $('email-tone').onchange = () => draftEmail(true);
+
+    // Copy Email with Clipboard Fallback
+    $('btn-copy').onclick = async () => {
+      const emailContent = $('email-text').value;
+      if (!emailContent) return toast('No email content to copy.', true);
+
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(emailContent);
+        } else {
+          $('email-text').select();
+          document.execCommand('copy');
+        }
+        const btn = $('btn-copy');
+        const oldText = btn.innerHTML;
+        btn.innerHTML = '✓ Copied to Clipboard!';
+        btn.style.background = '#059669';
+        btn.style.borderColor = '#059669';
+        toast('Application email copied to clipboard!');
+        setTimeout(() => {
+          btn.innerHTML = oldText;
+          btn.style.background = '';
+          btn.style.borderColor = '';
+        }, 2200);
+      } catch (e) {
+        $('email-text').select();
+        document.execCommand('copy');
+        toast('Email text copied!');
+      }
+    };
+
+    // Download Email as Text File
+    $('btn-download').onclick = () => {
+      const emailContent = $('email-text').value;
+      if (!emailContent) return toast('No email content to download.', true);
+
+      const blob = new Blob([emailContent], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const roleName = (CURRENT_ANALYSIS && CURRENT_ANALYSIS.role ? CURRENT_ANALYSIS.role : 'Application').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      a.download = `${roleName}_application_email.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast('Email file saved!');
+    };
+
+    // Load initial counts
+    updateCounters();
+  </script>
+</body>
+</html>
